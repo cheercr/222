@@ -343,6 +343,9 @@
         <div id="submit-done" style="display:none; text-align:center; padding:20px 0; color:var(--gold-hi);">
           ส่งข้อมูลเรียบร้อย — กิลด์ของคุณอยู่ระหว่างการตรวจสอบ ✦
         </div>
+        <div id="submit-error" style="display:none; text-align:center; padding:16px 0; color:#e0664a; font-size:.86rem;">
+          บันทึกคำขอไม่สำเร็จ — กรุณาลองใหม่อีกครั้ง หรือตรวจสอบว่าเปิดหน้านี้ผ่านลิงก์ที่เผยแพร่และล็อกอินอยู่
+        </div>
       </div>
     </div>
   </section>
@@ -555,14 +558,33 @@
       tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
       boosts:0, featured:false, status:'pending', createdAt: Date.now()
     };
+
+    const doneEl=document.getElementById('submit-done');
+    const errEl=document.getElementById('submit-error');
+    doneEl.style.display='none'; errEl.style.display='none';
+
     if(db){
-      try{ await db.collection('servers').add ? await db.collection('servers').add(doc) : await db.doc('servers/'+uid()).set(doc); }
-      catch(e){ /* silent */ }
+      try{
+        const colRef = db.collection('servers');
+        if(typeof colRef.add === 'function'){
+          await colRef.add(doc);
+        } else {
+          await db.doc('servers/'+uid()).set(doc);
+        }
+      } catch(err){
+        errEl.style.display='block';
+        return; // don't clear the form or show success — nothing was saved centrally
+      }
     } else {
+      // no central store available in this view — cannot reach the admin panel
       doc.id='local_'+uid(); servers.push(doc);
+      errEl.textContent='ไม่สามารถเชื่อมต่อระบบบันทึกส่วนกลางได้ตอนนี้ คำขอนี้จะไม่ถูกส่งไปให้ผู้ดูแลระบบเห็น กรุณาลองเปิดหน้านี้ผ่านลิงก์ที่เผยแพร่อีกครั้ง หรือล็อกอินเข้า Claude ก่อน';
+      errEl.style.display='block';
+      return;
     }
+
     document.getElementById('submit-form').style.display='none';
-    document.getElementById('submit-done').style.display='block';
+    doneEl.style.display='block';
     document.getElementById('submit-form').reset();
   }
 
@@ -610,6 +632,10 @@
     const approved = servers.filter(s=>s.status==='approved');
     const body=document.getElementById('admin-body');
     body.innerHTML = `
+      ${!db? `<div class="admin-sec" style="background:rgba(224,102,74,.08); border:1px solid #5c2e22; border-radius:var(--radius); padding:16px 18px;">
+        <b style="color:#e0664a;">ไม่ได้เชื่อมต่อระบบบันทึกส่วนกลาง</b>
+        <p class="sub" style="margin:6px 0 0;">แผงนี้กำลังแสดงข้อมูลในเบราว์เซอร์นี้เท่านั้น คำขอที่คนอื่นส่งมาจากเครื่องอื่นจะไม่ปรากฏที่นี่ ลองรีเฟรชหน้านี้ผ่านลิงก์ที่เผยแพร่อีกครั้ง</p>
+      </div>` : ''}
       <div class="admin-sec">
         <h3>รอตรวจสอบ ${pending.length? `<span class="badge-pending">${pending.length} รายการ</span>`:''}</h3>
         <p class="sub">อนุมัติเพื่อขึ้นทำเนียบ หรือปฏิเสธเพื่อลบออกจากคิว</p>
