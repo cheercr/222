@@ -326,13 +326,12 @@
         <form class="form" id="submit-form">
           <div class="full"><label>ชื่อเซิร์ฟเวอร์</label><input type="text" id="f-name" required placeholder="เช่น ห้องนั่งเล่นนักล่าดันเจี้ยน"></div>
           <div class="full"><label>ชื่อผู้ติดต่อ (Discord)</label><input type="text" id="f-contact" placeholder="เช่น ชื่อผู้ใช้ Discord ของคุณ"></div>
-          <div><label>หมวดหมู่</label>
+          <div class="full"><label>หมวดหมู่</label>
             <select id="f-cat">
               <option>เกม</option><option>อนิเมะ</option><option>ศิลปะ</option><option>เพลง</option>
               <option>สายงาน</option><option>ลงทุน/คริปโต</option><option>การเรียน</option><option>ชุมชนทั่วไป</option>
             </select>
           </div>
-          <div><label>จำนวนสมาชิก (โดยประมาณ)</label><input type="number" id="f-members" min="1" placeholder="เช่น 1200"></div>
           <div class="full"><label>ลิงก์คำเชิญ Discord</label><input type="text" id="f-invite" required placeholder="discord.gg/xxxxxxx"></div>
           <div class="full"><label>คำโปรยสั้นๆ</label><textarea id="f-desc" required placeholder="อธิบายกิลด์ของคุณในหนึ่งหรือสองประโยค"></textarea></div>
           <div class="full"><label>แท็ก (คั่นด้วยจุลภาค)</label><input type="text" id="f-tags" placeholder="เช่น RPG, ตั้งกิลด์ล่าบอส, ไทย"></div>
@@ -417,7 +416,7 @@
   let db=null;
   let adminUnlocked=false;
   const ADMIN_PASSWORD='091252';
-  let servers=[]; // {id,name,invite,category,members,desc,tags,boosts,status,featured,contact,createdAt}
+  let servers=[]; // {id,name,invite,category,desc,tags,boosts,status,featured,contact,createdAt}
   let activeCat='ทั้งหมด';
   const CATS=['ทั้งหมด','เกม','อนิเมะ','ศิลปะ','เพลง','สายงาน','ลงทุน/คริปโต','การเรียน','ชุมชนทั่วไป'];
 
@@ -506,7 +505,7 @@
           <div class="card-ava">${(s.name||'?').trim().charAt(0)}</div>
           <div>
             <div class="card-name">${escapeHtml(s.name)}</div>
-            <div class="card-meta">${escapeHtml(s.category||'')} · ${(s.members||0).toLocaleString('th-TH')} สมาชิก</div>
+            <div class="card-meta">${escapeHtml(s.category||'')}</div>
           </div>
         </div>
         <div class="card-desc">${escapeHtml(s.desc||'')}</div>
@@ -551,7 +550,6 @@
       name: document.getElementById('f-name').value.trim(),
       contact: document.getElementById('f-contact').value.trim(),
       category: document.getElementById('f-cat').value,
-      members: parseInt(document.getElementById('f-members').value||'0',10),
       invite: document.getElementById('f-invite').value.trim(),
       desc: document.getElementById('f-desc').value.trim(),
       tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
@@ -626,7 +624,7 @@
     const pl=document.getElementById('pending-list');
     pending.forEach(s=>{
       const row=document.createElement('div'); row.className='row-item';
-      row.innerHTML=`<div class="ri-main"><b>${escapeHtml(s.name)}</b><span>${escapeHtml(s.category)} · ${(s.members||0).toLocaleString('th-TH')} สมาชิก · ติดต่อ ${escapeHtml(s.contact||'ไม่ระบุ')}</span></div>
+      row.innerHTML=`<div class="ri-main"><b>${escapeHtml(s.name)}</b><span>${escapeHtml(s.category)} · ติดต่อ ${escapeHtml(s.contact||'ไม่ระบุ')}</span></div>
         <div class="row-actions"><button class="btn btn-gold btn-sm" data-act="approve" data-id="${s.id}">อนุมัติ</button>
         <button class="btn btn-ghost btn-sm" data-act="reject" data-id="${s.id}">ปฏิเสธ</button></div>`;
       pl.appendChild(row);
