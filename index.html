@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>GILDHALL — ทำเนียบดิสคอร์ด</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0807; --bg-2:#120f0b; --panel:#161210; --panel-2:#1b1611;
+    --line:#2c2417; --line-soft:#211b12;
+    --gold-hi:#f0d38a; --gold:#c9a227; --gold-deep:#8a6a1c; --gold-dim:#5c4712;
+    --ink-hi:#f6efdd; --ink-mid:#c8bc9e; --ink-low:#847a63;
+    --glow: rgba(201,162,39,.35);
+    --radius: 3px;
+  }
+  :root:not([data-theme="light"]){ color-scheme: dark; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ color-scheme: dark; } }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink-hi);
+    font-family:'IBM Plex Sans Thai', system-ui, sans-serif;
+    font-weight:400; line-height:1.7; overflow-x:hidden;
+  }
+  h1,h2,h3,.serif{ font-family:'Noto Serif Thai', serif; font-weight:600; letter-spacing:.01em; }
+  a{color:inherit;text-decoration:none;}
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+  ::selection{ background:var(--gold-deep); color:var(--ink-hi); }
+
+  /* ---------- ambient background ---------- */
+  #particles{ position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.55; }
+  .field-glow{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(600px 400px at 12% -6%, rgba(201,162,39,.16), transparent 60%),
+      radial-gradient(700px 500px at 108% 8%, rgba(240,211,138,.10), transparent 60%),
+      radial-gradient(900px 600px at 50% 118%, rgba(140,106,28,.14), transparent 60%);
+  }
+  main{ position:relative; z-index:1; }
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,8,7,.78); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  nav.wrap{ display:flex; align-items:center; justify-content:space-between; height:74px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-size:1.15rem; letter-spacing:.04em; }
+  .brand .mark{
+    width:30px;height:30px; border:1px solid var(--gold-deep); border-radius:50%;
+    display:grid; place-items:center; font-size:.85rem; color:var(--gold-hi);
+    background:radial-gradient(circle at 35% 30%, rgba(240,211,138,.25), transparent 70%);
+  }
+  .brand b{ background:linear-gradient(120deg,var(--gold-hi),var(--gold),var(--gold-hi));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    background-size:220% auto; animation:shimmer 7s linear infinite; }
+  @keyframes shimmer{ to{ background-position:220% center; } }
+  .navlinks{ display:flex; gap:34px; font-size:.9rem; color:var(--ink-mid); }
+  .navlinks a:hover{ color:var(--gold-hi); }
+  .navcta{ display:flex; align-items:center; gap:14px; }
+
+  .btn{
+    font-family:inherit; font-size:.86rem; cursor:pointer; border-radius:var(--radius);
+    padding:11px 20px; border:1px solid var(--gold-deep); background:transparent; color:var(--ink-hi);
+    transition:border-color .2s,background .2s, transform .15s; letter-spacing:.02em;
+  }
+  .btn:hover{ border-color:var(--gold-hi); background:rgba(201,162,39,.08); }
+  .btn:active{ transform:scale(.97); }
+  .btn-gold{
+    background:linear-gradient(135deg,var(--gold-hi),var(--gold) 60%,var(--gold-deep));
+    color:#150f04; border:none; font-weight:600; box-shadow:0 0 0 1px rgba(240,211,138,.3), 0 8px 24px -8px var(--glow);
+  }
+  .btn-gold:hover{ filter:brightness(1.08); box-shadow:0 0 0 1px rgba(240,211,138,.5), 0 10px 30px -6px var(--glow); }
+  .btn-ghost{ border-color:var(--line); color:var(--ink-mid); }
+  .btn-ghost:hover{ color:var(--ink-hi); border-color:var(--gold-deep); }
+  .btn-sm{ padding:7px 13px; font-size:.78rem; }
+
+  .userchip{ display:flex; align-items:center; gap:9px; font-size:.85rem; color:var(--ink-mid); }
+  .avatar{
+    width:30px;height:30px;border-radius:50%; display:grid; place-items:center;
+    font-family:'Noto Serif Thai',serif; font-weight:600; font-size:.85rem; color:#1a1207;
+    background:linear-gradient(135deg,var(--gold-hi),var(--gold-deep));
+    box-shadow:0 0 0 1px var(--gold-deep);
+  }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:96px 0 70px; position:relative; }
+  .hero-grid{ display:grid; grid-template-columns:1.15fr .85fr; gap:60px; align-items:center; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:9px; font-size:.78rem; color:var(--gold-hi);
+    border:1px solid var(--gold-dim); border-radius:20px; padding:6px 14px; margin-bottom:26px; letter-spacing:.03em; }
+  .eyebrow .dot{ width:6px;height:6px;border-radius:50%; background:var(--gold-hi); box-shadow:0 0 8px 2px var(--glow); animation:pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .hero h1{ font-size:3.1rem; line-height:1.22; margin:0 0 22px; color:var(--ink-hi); }
+  .hero h1 .g{ background:linear-gradient(100deg,var(--gold-deep),var(--gold-hi) 40%,var(--gold) 65%,var(--gold-hi));
+    -webkit-background-clip:text;background-clip:text;color:transparent; background-size:250% auto; animation:shimmer 8s linear infinite; }
+  .hero p{ font-size:1.05rem; color:var(--ink-mid); max-width:46ch; margin:0 0 34px; }
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; }
+  .stat-row{ display:flex; gap:40px; margin-top:52px; }
+  .stat b{ display:block; font-family:'Noto Serif Thai',serif; font-size:1.7rem; color:var(--gold-hi); }
+  .stat span{ font-size:.78rem; color:var(--ink-low); }
+
+  .orb-wrap{ position:relative; height:420px; display:grid; place-items:center; }
+  .orb{
+    width:300px;height:300px;border-radius:50%; position:relative;
+    background:radial-gradient(circle at 32% 28%, rgba(240,211,138,.5), rgba(201,162,39,.06) 55%, transparent 70%);
+    border:1px solid var(--gold-dim);
+    animation:float 6s ease-in-out infinite;
+  }
+  .orb::before,.orb::after{
+    content:""; position:absolute; inset:-34px; border-radius:50%;
+    border:1px solid rgba(201,162,39,.18);
+  }
+  .orb::after{ inset:-68px; border-color:rgba(201,162,39,.08); }
+  @keyframes float{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-14px);} }
+  .orb-core{
+    position:absolute; inset:0; display:grid; place-items:center; font-family:'Noto Serif Thai',serif;
+    font-size:2.4rem; color:var(--gold-hi); text-shadow:0 0 30px var(--glow);
+  }
+
+  /* ---------- section shell ---------- */
+  section{ padding:74px 0; border-top:1px solid var(--line-soft); }
+  .sec-head{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:38px; gap:20px; flex-wrap:wrap; }
+  .sec-head h2{ font-size:1.9rem; color:var(--ink-hi); margin:0 0 6px; }
+  .sec-head p{ color:var(--ink-low); margin:0; font-size:.92rem; }
+
+  /* ---------- chips ---------- */
+  .chips{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px; }
+  .chip{
+    font-size:.82rem; padding:8px 16px; border-radius:20px; border:1px solid var(--line);
+    color:var(--ink-mid); cursor:pointer; background:var(--panel); transition:.2s;
+  }
+  .chip:hover{ border-color:var(--gold-deep); color:var(--ink-hi); }
+  .chip.active{ background:linear-gradient(135deg,rgba(240,211,138,.16),rgba(201,162,39,.08)); border-color:var(--gold); color:var(--gold-hi); }
+
+  /* ---------- server grid ---------- */
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .card{
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line); border-radius:var(--radius); padding:22px;
+    position:relative; overflow:hidden; transition:transform .25s, border-color .25s, box-shadow .25s;
+  }
+  .card::before{
+    content:""; position:absolute; inset:0; padding:1px; border-radius:var(--radius);
+    background:linear-gradient(135deg,transparent 40%, rgba(201,162,39,.5), transparent 60%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; opacity:0; transition:opacity .25s;
+  }
+  .card:hover{ transform:translateY(-4px); border-color:var(--gold-dim); box-shadow:0 20px 40px -20px rgba(0,0,0,.6), 0 0 30px -14px var(--glow); }
+  .card:hover::before{ opacity:1; }
+  .card.featured{ border-color:var(--gold-deep); box-shadow:0 0 0 1px rgba(201,162,39,.25), 0 20px 40px -22px var(--glow); }
+  .card-top{ display:flex; gap:13px; align-items:center; margin-bottom:14px; }
+  .card-ava{ width:46px;height:46px;border-radius:14px; display:grid; place-items:center; font-family:'Noto Serif Thai',serif;
+    font-weight:600; font-size:1.2rem; color:#150f04; background:linear-gradient(135deg,var(--gold-hi),var(--gold-deep)); flex:none; }
+  .card-name{ font-family:'Noto Serif Thai',serif; font-size:1.08rem; color:var(--ink-hi); }
+  .card-meta{ font-size:.76rem; color:var(--ink-low); }
+  .card-desc{ font-size:.87rem; color:var(--ink-mid); min-height:44px; margin-bottom:14px; }
+  .card-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
+  .tag{ font-size:.72rem; padding:3px 10px; border:1px solid var(--line); border-radius:12px; color:var(--ink-low); }
+  .card-foot{ display:flex; align-items:center; justify-content:space-between; }
+  .boost{ display:flex; align-items:center; gap:7px; font-size:.82rem; color:var(--gold-hi); background:none; border:1px solid var(--line); border-radius:20px; padding:7px 13px; cursor:pointer; transition:.2s; }
+  .boost:hover{ border-color:var(--gold-hi); background:rgba(201,162,39,.08); }
+  .boost.boosted{ color:var(--ink-low); border-color:var(--line-soft); cursor:default; }
+  .fstar{ position:absolute; top:14px; right:14px; font-size:.68rem; color:var(--gold-hi); letter-spacing:.04em; border:1px solid var(--gold-dim); padding:3px 8px; border-radius:10px; }
+  .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--ink-low); border:1px dashed var(--line); border-radius:var(--radius); }
+
+  /* ---------- how it works ---------- */
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; position:relative; }
+  .step{ padding:0 26px; position:relative; }
+  .step:not(:last-child)::after{
+    content:""; position:absolute; top:22px; right:-6px; width:calc(100% - 20px); height:1px;
+    background:linear-gradient(90deg,var(--gold-dim),transparent);
+  }
+  .step-n{ width:44px;height:44px;border-radius:50%; border:1px solid var(--gold-deep); display:grid;place-items:center;
+    font-family:'Noto Serif Thai',serif; color:var(--gold-hi); margin-bottom:18px; background:var(--panel); }
+  .step h3{ font-size:1.05rem; margin:0 0 8px; color:var(--ink-hi); }
+  .step p{ font-size:.86rem; color:var(--ink-low); margin:0; }
+
+  /* ---------- submit ---------- */
+  .submit-shell{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:38px; }
+  .locked{ text-align:center; padding:30px 10px; color:var(--ink-mid); }
+  .locked p{ margin:0 0 20px; }
+  .form{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .form .full{ grid-column:1/-1; }
+  label{ display:block; font-size:.78rem; color:var(--ink-low); margin-bottom:7px; letter-spacing:.02em; }
+  input,select,textarea{
+    width:100%; background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius);
+    color:var(--ink-hi); padding:11px 13px; font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s;
+  }
+  input:focus,select:focus,textarea:focus{ border-color:var(--gold); }
+  textarea{ resize:vertical; min-height:80px; }
+  .form-foot{ grid-column:1/-1; display:flex; justify-content:flex-end; align-items:center; gap:14px; margin-top:6px; }
+  .hint{ font-size:.78rem; color:var(--ink-low); margin-right:auto; }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--line-soft); padding:36px 0; }
+  .foot-row{ display:flex; justify-content:space-between; align-items:center; font-size:.78rem; color:var(--ink-low); flex-wrap:wrap; gap:12px; }
+  .foot-row a:hover{ color:var(--gold-hi); }
+
+  /* ---------- modal ---------- */
+  .modal-bg{ position:fixed; inset:0; background:rgba(6,5,4,.72); backdrop-filter:blur(4px); z-index:100;
+    display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-bg.show{ display:flex; }
+  .modal{
+    width:100%; max-width:380px; background:var(--panel-2); border:1px solid var(--gold-dim); border-radius:6px;
+    padding:34px 28px; text-align:center; box-shadow:0 30px 70px -20px rgba(0,0,0,.7), 0 0 40px -10px var(--glow);
+  }
+  .discord-mark{ width:56px;height:56px; border-radius:16px; margin:0 auto 20px; display:grid;place-items:center;
+    background:linear-gradient(135deg,#5865F2,#4752c4); font-size:1.5rem; }
+  .spin{ width:22px;height:22px;border-radius:50%; border:2px solid var(--gold-dim); border-top-color:var(--gold-hi);
+    margin:18px auto 0; animation:spin .8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .modal small{ color:var(--ink-low); display:block; margin-top:16px; font-size:.72rem; }
+
+  /* ---------- admin ---------- */
+  #admin-view{ display:none; }
+  #admin-view.show{ display:block; }
+  #public-view.hide{ display:none; }
+  .admin-topbar{ position:sticky; top:0; z-index:50; background:rgba(10,8,7,.9); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft); padding:18px 0; }
+  .admin-topbar .wrap{ display:flex; justify-content:space-between; align-items:center; }
+  .admin-wrap{ max-width:980px; margin:0 auto; padding:48px 28px; }
+  .admin-sec{ margin-bottom:46px; }
+  .admin-sec h3{ font-size:1.2rem; margin:0 0 4px; color:var(--ink-hi); }
+  .admin-sec p.sub{ color:var(--ink-low); font-size:.84rem; margin:0 0 20px; }
+  .row-item{
+    display:flex; align-items:center; gap:16px; padding:16px 18px; border:1px solid var(--line);
+    border-radius:var(--radius); margin-bottom:10px; background:var(--panel);
+  }
+  .row-item .ri-main{ flex:1; min-width:0; }
+  .row-item .ri-main b{ color:var(--ink-hi); font-family:'Noto Serif Thai',serif; }
+  .row-item .ri-main span{ display:block; font-size:.78rem; color:var(--ink-low); margin-top:3px; }
+  .row-actions{ display:flex; gap:8px; flex:none; }
+  .badge-pending{ font-size:.7rem; color:#e0b84a; border:1px solid #5c4712; padding:2px 8px; border-radius:10px; margin-left:8px; }
+  .admin-gate{ min-height:70vh; display:grid; place-items:center; text-align:center; padding:20px; }
+  .admin-gate p{ color:var(--ink-low); max-width:36ch; }
+
+  @media (max-width:860px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .orb-wrap{ height:220px; }
+    .grid{ grid-template-columns:1fr 1fr; }
+    .steps{ grid-template-columns:1fr; gap:26px; }
+    .step:not(:last-child)::after{ display:none; }
+    .form{ grid-template-columns:1fr; }
+    .navlinks{ display:none; }
+    .hero h1{ font-size:2.2rem; }
+  }
+  @media (max-width:560px){
+    .grid{ grid-template-columns:1fr; }
+    .stat-row{ gap:24px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="field-glow"></div>
+<canvas id="particles"></canvas>
+
+<!-- ============ PUBLIC VIEW ============ -->
+<div id="public-view">
+<header>
+  <nav class="wrap">
+    <div class="brand"><span class="mark">♛</span><b>GILDHALL</b></div>
+    <div class="navlinks">
+      <a href="#board">ทำเนียบกิลด์</a>
+      <a href="#how">วิธีการทำงาน</a>
+      <a href="#submit">ส่งเซิร์ฟเวอร์</a>
+    </div>
+    <div class="navcta" id="navcta"></div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" style="border-top:none;">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> เปิดรับกิลด์ใหม่ประจำสัปดาห์</div>
+        <h1>พื้นที่ที่<span class="g">คัดสรร</span>ไว้<br>สำหรับดิสคอร์ดที่ควรค่าแก่การถูกเห็น</h1>
+        <p>ไม่ใช่ทุกเซิร์ฟเวอร์ที่จะได้ขึ้นทำเนียบ — GILDHALL คัดกรองกิลด์คุณภาพให้คนที่ใช่ค้นเจอคุณก่อนใคร พร้อมระบบบูสต์ที่ยุติธรรมและหน้าโปรไฟล์ที่ดูน่าเชื่อถือระดับพรีเมียม</p>
+        <div class="hero-ctas">
+          <button class="btn btn-gold" id="cta-submit">ส่งเซิร์ฟเวอร์ของคุณ</button>
+          <a href="#board" class="btn btn-ghost">ดูทำเนียบทั้งหมด</a>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b id="stat-servers">—</b><span>กิลด์ที่ขึ้นทำเนียบ</span></div>
+          <div class="stat"><b id="stat-boosts">—</b><span>บูสต์สะสมทั้งหมด</span></div>
+          <div class="stat"><b>24 ชม.</b><span>คิวตรวจสอบเฉลี่ย</span></div>
+        </div>
+      </div>
+      <div class="orb-wrap">
+        <div class="orb"><div class="orb-core">♛</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="board">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><h2>ทำเนียบกิลด์</h2><p>เรียงตามยอดบูสต์ — กดบูสต์เพื่อดันเซิร์ฟเวอร์ที่คุณชอบขึ้นอันดับ</p></div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="grid" id="grid"><div class="empty">กำลังโหลดทำเนียบ…</div></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head"><div><h2>วิธีการทำงาน</h2><p>สามขั้นตอนสั้นๆ ก่อนกิลด์ของคุณจะขึ้นทำเนียบ</p></div></div>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><h3>กรอกรายละเอียดกิลด์</h3><p>ชื่อ คำโปรย หมวดหมู่ และลิงก์คำเชิญของเซิร์ฟเวอร์คุณ</p></div>
+        <div class="step"><div class="step-n">2</div><h3>ส่งเข้าคิว</h3><p>ระบบจะบันทึกคำขอของคุณไว้รอทีมงานตรวจสอบ</p></div>
+        <div class="step"><div class="step-n">3</div><h3>ทีมงานตรวจสอบ</h3><p>เมื่อผ่านการตรวจสอบ กิลด์ของคุณจะขึ้นทำเนียบทันที</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="submit">
+    <div class="wrap" style="max-width:760px;">
+      <div class="sec-head"><div><h2>ส่งเซิร์ฟเวอร์ของคุณ</h2><p>กรอกข้อมูลให้ครบ ทีมงานจะตรวจสอบก่อนขึ้นทำเนียบ</p></div></div>
+      <div class="submit-shell">
+        <form class="form" id="submit-form">
+          <div class="full"><label>ชื่อเซิร์ฟเวอร์</label><input type="text" id="f-name" required placeholder="เช่น ห้องนั่งเล่นนักล่าดันเจี้ยน"></div>
+          <div class="full"><label>ชื่อผู้ติดต่อ (Discord)</label><input type="text" id="f-contact" placeholder="เช่น ชื่อผู้ใช้ Discord ของคุณ"></div>
+          <div><label>หมวดหมู่</label>
+            <select id="f-cat">
+              <option>เกม</option><option>อนิเมะ</option><option>ศิลปะ</option><option>เพลง</option>
+              <option>สายงาน</option><option>ลงทุน/คริปโต</option><option>การเรียน</option><option>ชุมชนทั่วไป</option>
+            </select>
+          </div>
+          <div><label>จำนวนสมาชิก (โดยประมาณ)</label><input type="number" id="f-members" min="1" placeholder="เช่น 1200"></div>
+          <div class="full"><label>ลิงก์คำเชิญ Discord</label><input type="text" id="f-invite" required placeholder="discord.gg/xxxxxxx"></div>
+          <div class="full"><label>คำโปรยสั้นๆ</label><textarea id="f-desc" required placeholder="อธิบายกิลด์ของคุณในหนึ่งหรือสองประโยค"></textarea></div>
+          <div class="form-foot">
+            <span class="hint">ส่งแล้วจะเข้าคิวรอตรวจสอบก่อนขึ้นทำเนียบ</span>
+            <button type="submit" class="btn btn-gold">ส่งเข้าคิวตรวจสอบ</button>
+          </div>
+        </form>
+        <div id="submit-done" style="display:none; text-align:center; padding:20px 0; color:var(--gold-hi);">
+          ส่งข้อมูลเรียบร้อย — กิลด์ของคุณอยู่ระหว่างการตรวจสอบ ✦
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>© 2026 GILDHALL — ทำเนียบดิสคอร์ดคัดสรร</span>
+    <a href="#" id="admin-link">สำหรับผู้ดูแลระบบ</a>
+  </div>
+</footer>
+</div>
+
+<!-- ============ ADMIN VIEW ============ -->
+<div id="admin-view">
+  <div class="admin-topbar">
+    <div class="wrap">
+      <div class="brand"><span class="mark">♛</span><b>GILDHALL</b><span style="color:var(--ink-low);font-size:.8rem;margin-left:8px;">/ แผงควบคุม</span></div>
+      <button class="btn btn-ghost btn-sm" id="admin-exit">กลับหน้าเว็บไซต์</button>
+    </div>
+  </div>
+  <div class="admin-wrap" id="admin-body"></div>
+</div>
+
+<!-- admin password modal -->
+<div class="modal-bg" id="admin-modal">
+  <div class="modal">
+    <div class="discord-mark">🔒</div>
+    <h3 style="margin:0 0 8px;">แผงควบคุมหลังบ้าน</h3>
+    <p style="color:var(--ink-mid);font-size:.86rem;margin:0 0 20px;">กรอกรหัสผ่านสำหรับผู้ดูแลระบบ</p>
+    <input type="password" id="admin-pass-input" placeholder="รหัสผ่าน" style="margin-bottom:6px;">
+    <p id="admin-pass-error" style="display:none;color:#e0664a;font-size:.78rem;margin:0 0 10px;">รหัสผ่านไม่ถูกต้อง</p>
+    <button class="btn btn-gold" style="width:100%;margin-top:10px;" id="admin-pass-submit">เข้าสู่แผงควบคุม</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px;" id="admin-pass-cancel">ยกเลิก</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- particle field ---------------- */
+  const canvas=document.getElementById('particles');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){ W=canvas.width=innerWidth; H=canvas.height=innerHeight*1.4; }
+  function initParticles(){
+    particles=[];
+    const n=Math.min(70, Math.floor(W/22));
+    for(let i=0;i<n;i++){
+      particles.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+.4,
+        vy:Math.random()*.25+.05, a:Math.random()*.5+.15 });
+    }
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.y-=p.vy; if(p.y<-5){ p.y=H+5; p.x=Math.random()*W; }
+      ctx.beginPath();
+      ctx.fillStyle=`rgba(240,211,138,${p.a})`;
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  resize(); initParticles();
+  window.addEventListener('resize', ()=>{ resize(); initParticles(); });
+  if(!reduceMotion) requestAnimationFrame(tick);
+
+  /* ---------------- state ---------------- */
+  let db=null;
+  let adminUnlocked=false;
+  const ADMIN_PASSWORD='091252';
+  let servers=[]; // {id,name,invite,category,members,desc,tags,boosts,status,featured,contact,createdAt}
+  let activeCat='ทั้งหมด';
+  const CATS=['ทั้งหมด','เกม','อนิเมะ','ศิลปะ','เพลง','สายงาน','ลงทุน/คริปโต','การเรียน','ชุมชนทั่วไป'];
+
+  function uid(){ return 'u_' + Math.random().toString(36).slice(2,10); }
+  function boostedSet(){
+    try{ return new Set(JSON.parse(localStorage.getItem('gh_boosted')||'[]')); }catch(e){ return new Set(); }
+  }
+  function saveBoosted(set){ localStorage.setItem('gh_boosted', JSON.stringify([...set])); }
+
+  /* ---------------- boot ---------------- */
+  async function boot(){
+    try{
+      if(window.claude && window.claude.use){
+        db = await window.claude.use('db');
+      }
+    }catch(e){ db=null; }
+
+    if(db){
+      try{
+        await ensureSeed();
+        subscribeServers();
+      }catch(e){ fallbackLocal(); }
+    } else {
+      fallbackLocal();
+    }
+
+    renderChips();
+    renderNav();
+    renderAdminEntry();
+    bindEvents();
+  }
+
+  function fallbackLocal(){
+    servers = SEED.map((s,i)=>({ id:'local_'+i, status:'approved', ownerId:'seed', createdAt:Date.now()-i, ...s }));
+    renderGrid(); renderStats();
+  }
+
+  async function ensureSeed(){
+    const col = db.collection('servers');
+    let snap;
+    try{ snap = await col.get(); }catch(e){ snap=null; }
+    const empty = !snap || !snap.docs || snap.docs.length===0;
+    if(empty){
+      for(let i=0;i<SEED.length;i++){
+        const s=SEED[i];
+        await db.doc('servers/seed_'+i).set({ ...s, status:'approved', ownerId:'seed', createdAt:Date.now()-i });
+      }
+    }
+  }
+
+  function subscribeServers(){
+    const col = db.collection('servers');
+    if(col.onSnapshot){
+      col.onSnapshot((snap)=>{
+        servers = (snap.docs||[]).map(d=>({ id:d.id, ...d.data() }));
+        renderGrid(); renderStats(); renderAdminIfOpen();
+      });
+    } else {
+      col.get().then(snap=>{
+        servers=(snap.docs||[]).map(d=>({ id:d.id, ...d.data() }));
+        renderGrid(); renderStats();
+      });
+    }
+  }
+
+  /* ---------------- render: public ---------------- */
+  function renderChips(){
+    const el=document.getElementById('chips');
+    el.innerHTML='';
+    CATS.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='chip'+(c===activeCat?' active':'');
+      b.textContent=c;
+      b.onclick=()=>{ activeCat=c; renderChips(); renderGrid(); };
+      el.appendChild(b);
+    });
+  }
+
+  function renderStats(){
+    const approved = servers.filter(s=>s.status==='approved');
+    document.getElementById('stat-servers').textContent = approved.length;
+    document.getElementById('stat-boosts').textContent = approved.reduce((a,s)=>a+(s.boosts||0),0);
+  }
+
+  function renderGrid(){
+    const el=document.getElementById('grid');
+    let list = servers.filter(s=>s.status==='approved');
+    if(activeCat!=='ทั้งหมด') list=list.filter(s=>s.category===activeCat);
+    list = list.slice().sort((a,b)=> (b.featured?1:0)-(a.featured?1:0) || (b.boosts||0)-(a.boosts||0));
+    if(list.length===0){ el.innerHTML='<div class="empty">ยังไม่มีกิลด์ในหมวดนี้ — เป็นคนแรกที่ส่งเซิร์ฟเวอร์สิ</div>'; return; }
+    const boosted = boostedSet();
+    el.innerHTML='';
+    list.forEach(s=>{
+      const card=document.createElement('div');
+      card.className='card'+(s.featured?' featured':'');
+      const already = boosted.has(s.id);
+      card.innerHTML = `
+        ${s.featured?'<div class="fstar">แนะนำ</div>':''}
+        <div class="card-top">
+          <div class="card-ava">${(s.name||'?').trim().charAt(0)}</div>
+          <div>
+            <div class="card-name">${escapeHtml(s.name)}</div>
+            <div class="card-meta">${escapeHtml(s.category||'')} · ${(s.members||0).toLocaleString('th-TH')} สมาชิก</div>
+          </div>
+        </div>
+        <div class="card-desc">${escapeHtml(s.desc||'')}</div>
+        <div class="card-tags">${(s.tags||[]).slice(0,4).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+        <div class="card-foot">
+          <button class="boost ${already?'boosted':''}" data-id="${s.id}">✦ บูสต์ · ${s.boosts||0}</button>
+          <a class="btn btn-ghost btn-sm" href="${s.invite?ensureUrl(s.invite):'#'}" target="_blank" rel="noopener">เข้าร่วม</a>
+        </div>
+      `;
+      el.appendChild(card);
+    });
+    el.querySelectorAll('.boost').forEach(btn=>{
+      btn.addEventListener('click', ()=>doBoost(btn.dataset.id));
+    });
+  }
+
+  function ensureUrl(v){ return /^https?:\/\//.test(v) ? v : 'https://'+v; }
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  async function doBoost(id){
+    const boosted=boostedSet();
+    if(boosted.has(id)) return;
+    boosted.add(id); saveBoosted(boosted);
+    const s = servers.find(x=>x.id===id);
+    if(s) s.boosts = (s.boosts||0)+1;
+    renderGrid(); renderStats();
+    if(db){
+      try{ await db.doc('servers/'+id).update({ boosts: (s?.boosts)||1 }); }catch(e){}
+    }
+  }
+
+  function renderNav(){
+    const el=document.getElementById('navcta');
+    el.innerHTML = `<button class="btn btn-gold btn-sm" id="nav-submit-btn">ส่งเซิร์ฟเวอร์ของคุณ</button>`;
+    el.querySelector('#nav-submit-btn').onclick=()=>document.getElementById('submit').scrollIntoView({behavior:'smooth'});
+  }
+
+  /* ---------------- submit form ---------------- */
+  async function handleSubmit(e){
+    e.preventDefault();
+    const doc = {
+      name: document.getElementById('f-name').value.trim(),
+      contact: document.getElementById('f-contact').value.trim(),
+      category: document.getElementById('f-cat').value,
+      members: parseInt(document.getElementById('f-members').value||'0',10),
+      invite: document.getElementById('f-invite').value.trim(),
+      desc: document.getElementById('f-desc').value.trim(),
+      tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+      boosts:0, featured:false, status:'pending', createdAt: Date.now()
+    };
+    if(db){
+      try{ await db.collection('servers').add ? await db.collection('servers').add(doc) : await db.doc('servers/'+uid()).set(doc); }
+      catch(e){ /* silent */ }
+    } else {
+      doc.id='local_'+uid(); servers.push(doc);
+    }
+    document.getElementById('submit-form').style.display='none';
+    document.getElementById('submit-done').style.display='block';
+    document.getElementById('submit-form').reset();
+  }
+
+  /* ---------------- admin ---------------- */
+  function renderAdminEntry(){
+    document.getElementById('admin-link').addEventListener('click', (e)=>{
+      e.preventDefault();
+      if(adminUnlocked){ enterAdmin(); return; }
+      openAdminModal();
+    });
+    document.getElementById('admin-exit').addEventListener('click', exitAdmin);
+  }
+  function openAdminModal(){
+    document.getElementById('admin-pass-error').style.display='none';
+    document.getElementById('admin-pass-input').value='';
+    document.getElementById('admin-modal').classList.add('show');
+    setTimeout(()=>document.getElementById('admin-pass-input').focus(), 50);
+  }
+  function closeAdminModal(){ document.getElementById('admin-modal').classList.remove('show'); }
+  function submitAdminPassword(){
+    const val=document.getElementById('admin-pass-input').value;
+    if(val===ADMIN_PASSWORD){
+      adminUnlocked=true;
+      closeAdminModal();
+      enterAdmin();
+    } else {
+      document.getElementById('admin-pass-error').style.display='block';
+    }
+  }
+  function enterAdmin(){
+    document.getElementById('public-view').classList.add('hide');
+    document.getElementById('admin-view').classList.add('show');
+    renderAdminBody();
+  }
+  function exitAdmin(){
+    document.getElementById('admin-view').classList.remove('show');
+    document.getElementById('public-view').classList.remove('hide');
+  }
+  function renderAdminIfOpen(){
+    if(document.getElementById('admin-view').classList.contains('show') && adminUnlocked) renderAdminBody();
+  }
+
+  function renderAdminBody(){
+    const pending = servers.filter(s=>s.status==='pending');
+    const approved = servers.filter(s=>s.status==='approved');
+    const body=document.getElementById('admin-body');
+    body.innerHTML = `
+      <div class="admin-sec">
+        <h3>รอตรวจสอบ ${pending.length? `<span class="badge-pending">${pending.length} รายการ</span>`:''}</h3>
+        <p class="sub">อนุมัติเพื่อขึ้นทำเนียบ หรือปฏิเสธเพื่อลบออกจากคิว</p>
+        <div id="pending-list">${pending.length? '' : '<div class="empty" style="padding:30px;">ไม่มีรายการรอตรวจสอบ</div>'}</div>
+      </div>
+      <div class="admin-sec">
+        <h3>เซิร์ฟเวอร์ทั้งหมด</h3>
+        <p class="sub">ปักหมุดแนะนำ หรือลบออกจากทำเนียบ</p>
+        <div id="approved-list">${approved.length? '' : '<div class="empty" style="padding:30px;">ยังไม่มีเซิร์ฟเวอร์ในทำเนียบ</div>'}</div>
+      </div>
+    `;
+    const pl=document.getElementById('pending-list');
+    pending.forEach(s=>{
+      const row=document.createElement('div'); row.className='row-item';
+      row.innerHTML=`<div class="ri-main"><b>${escapeHtml(s.name)}</b><span>${escapeHtml(s.category)} · ${(s.members||0).toLocaleString('th-TH')} สมาชิก · ติดต่อ ${escapeHtml(s.contact||'ไม่ระบุ')}</span></div>
+        <div class="row-actions"><button class="btn btn-gold btn-sm" data-act="approve" data-id="${s.id}">อนุมัติ</button>
+        <button class="btn btn-ghost btn-sm" data-act="reject" data-id="${s.id}">ปฏิเสธ</button></div>`;
+      pl.appendChild(row);
+    });
+    const al=document.getElementById('approved-list');
+    approved.slice().sort((a,b)=>(b.boosts||0)-(a.boosts||0)).forEach(s=>{
+      const row=document.createElement('div'); row.className='row-item';
+      row.innerHTML=`<div class="ri-main"><b>${escapeHtml(s.name)}</b>${s.featured?'<span class="badge-pending" style="color:var(--gold-hi);border-color:var(--gold-deep);">แนะนำ</span>':''}<span>${escapeHtml(s.category)} · บูสต์ ${s.boosts||0}</span></div>
+        <div class="row-actions"><button class="btn btn-ghost btn-sm" data-act="feature" data-id="${s.id}">${s.featured?'เลิกแนะนำ':'ปักหมุดแนะนำ'}</button>
+        <button class="btn btn-ghost btn-sm" data-act="delete" data-id="${s.id}">ลบ</button></div>`;
+      al.appendChild(row);
+    });
+    body.querySelectorAll('[data-act]').forEach(btn=>{
+      btn.addEventListener('click', ()=>adminAction(btn.dataset.act, btn.dataset.id));
+    });
+  }
+
+  async function adminAction(act, id){
+    const s = servers.find(x=>x.id===id);
+    if(!s) return;
+    if(act==='approve') s.status='approved';
+    if(act==='reject'){ servers=servers.filter(x=>x.id!==id); }
+    if(act==='delete'){ servers=servers.filter(x=>x.id!==id); }
+    if(act==='feature') s.featured=!s.featured;
+    renderAdminBody(); renderGrid(); renderStats();
+    if(db){
+      try{
+        if(act==='approve') await db.doc('servers/'+id).update({status:'approved'});
+        if(act==='reject' || act==='delete') await db.doc('servers/'+id).delete();
+        if(act==='feature') await db.doc('servers/'+id).update({featured: s.featured});
+      }catch(e){}
+    }
+  }
+
+  /* ---------------- bind ---------------- */
+  function bindEvents(){
+    document.getElementById('cta-submit').onclick=()=>document.getElementById('submit').scrollIntoView({behavior:'smooth'});
+    document.getElementById('admin-pass-submit').onclick=submitAdminPassword;
+    document.getElementById('admin-pass-cancel').onclick=closeAdminModal;
+    document.getElementById('admin-pass-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitAdminPassword(); });
+    document.getElementById('admin-modal').addEventListener('click', (e)=>{ if(e.target.id==='admin-modal') closeAdminModal(); });
+    document.getElementById('submit-form').addEventListener('submit', handleSubmit);
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
