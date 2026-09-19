@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>GILDHALL — ทำเนียบดิสคอร์ด</title>
+<title>GILDHALL — ทำเนียบดิสคอร์ดคัดสรร</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -335,6 +335,7 @@
           <div><label>จำนวนสมาชิก (โดยประมาณ)</label><input type="number" id="f-members" min="1" placeholder="เช่น 1200"></div>
           <div class="full"><label>ลิงก์คำเชิญ Discord</label><input type="text" id="f-invite" required placeholder="discord.gg/xxxxxxx"></div>
           <div class="full"><label>คำโปรยสั้นๆ</label><textarea id="f-desc" required placeholder="อธิบายกิลด์ของคุณในหนึ่งหรือสองประโยค"></textarea></div>
+          <div class="full"><label>แท็ก (คั่นด้วยจุลภาค)</label><input type="text" id="f-tags" placeholder="เช่น RPG, ตั้งกิลด์ล่าบอส, ไทย"></div>
           <div class="form-foot">
             <span class="hint">ส่งแล้วจะเข้าคิวรอตรวจสอบก่อนขึ้นทำเนียบ</span>
             <button type="submit" class="btn btn-gold">ส่งเข้าคิวตรวจสอบ</button>
@@ -436,7 +437,6 @@
 
     if(db){
       try{
-        await ensureSeed();
         subscribeServers();
       }catch(e){ fallbackLocal(); }
     } else {
@@ -450,21 +450,8 @@
   }
 
   function fallbackLocal(){
-    servers = SEED.map((s,i)=>({ id:'local_'+i, status:'approved', ownerId:'seed', createdAt:Date.now()-i, ...s }));
+    servers = [];
     renderGrid(); renderStats();
-  }
-
-  async function ensureSeed(){
-    const col = db.collection('servers');
-    let snap;
-    try{ snap = await col.get(); }catch(e){ snap=null; }
-    const empty = !snap || !snap.docs || snap.docs.length===0;
-    if(empty){
-      for(let i=0;i<SEED.length;i++){
-        const s=SEED[i];
-        await db.doc('servers/seed_'+i).set({ ...s, status:'approved', ownerId:'seed', createdAt:Date.now()-i });
-      }
-    }
   }
 
   function subscribeServers(){
